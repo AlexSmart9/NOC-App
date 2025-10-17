@@ -1,15 +1,20 @@
+import { LogDatasource } from "../../datasource/log.datasource.js";
+import { LogEntity, LogSeverityLevel } from "../../entities/log.entity.js";
+
+
 interface CheckServiceUseCase {
     execute(url: string):Promise<boolean>
 };
 
-type SuccesCallback = () => void;
-type ErrorCallback = ( error: string) => void;
+type SuccesCallback = (() => void ) | undefined;
+type ErrorCallback = (( error: string) => void) | undefined;
 
 export class CheckService implements CheckServiceUseCase{
 
     constructor(
-        private readonly succesCallback: SuccesCallback,
-        private readonly errorCallback : ErrorCallback
+        private readonly logDatasource  : LogDatasource,
+        private readonly succesCallback : SuccesCallback,
+        private readonly errorCallback  : ErrorCallback,
     ) {};
 
 
@@ -18,19 +23,26 @@ export class CheckService implements CheckServiceUseCase{
 
         try {
 
-            const req = await fetch(url)
+            const req = await fetch(url);
+
             if (!req.ok) {
-                throw new Error(`Error check service ${url}`)
+                throw new Error(`Error check service ${url}`);
             };
 
-            this.succesCallback();
+            const log = new LogEntity(`Service ${url} is working`, LogSeverityLevel.low);
+
+            this.logDatasource.saveLog( log );
+            this.succesCallback && this.succesCallback();
 
             return true;
 
-        } catch (error) {
+        } catch ( error ) {
             
-            console.log(`${error}`);
-            this.errorCallback(`${error}`);
+            const erroMessage = `${url} is not working: ${ error }`
+            const log = new LogEntity( erroMessage, LogSeverityLevel.high );
+
+            this.logDatasource.saveLog( log );
+            this.errorCallback && this.errorCallback( erroMessage );
 
             return false;   
         }

@@ -29,7 +29,11 @@ export class CheckService implements CheckServiceUseCase{
                 throw new Error(`Error check service ${url}`);
             };
 
-            const log = new LogEntity(`Service ${url} is working`, LogSeverityLevel.low);
+            const log = new LogEntity({
+                message : `Service ${url} is working`,
+                level : LogSeverityLevel.low,
+                origin : 'check-service.ts'
+            });
 
             this.logDatasource.saveLog( log );
             this.succesCallback && this.succesCallback();
@@ -38,11 +42,15 @@ export class CheckService implements CheckServiceUseCase{
 
         } catch ( error ) {
             
-            const erroMessage = `${url} is not working: ${ error }`
-            const log = new LogEntity( erroMessage, LogSeverityLevel.high );
+            const errorMessage = `${url} is not working: ${ error }`
+            const log = new LogEntity( {
+                message: errorMessage, 
+                level : LogSeverityLevel.high, 
+                origin : 'check-service.ts'
+            });
 
             this.logDatasource.saveLog( log );
-            this.errorCallback && this.errorCallback( erroMessage );
+            this.errorCallback && this.errorCallback( errorMessage );
 
             return false;   
         }

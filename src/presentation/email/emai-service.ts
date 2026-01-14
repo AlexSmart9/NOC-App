@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer'
-import 'dotenv/config';
+import { envs } from '../../config/plugins/envs.plugin';
 
 
 
@@ -18,10 +18,10 @@ interface Attachment{
 export class EmailService {
 
     private transporter = nodemailer.createTransport({
-        service : process.env.MAILER_SERVICE,
+        service : envs.MAILER_SERVICE,
         auth : {
-            user: process.env.MAILER_EMAIL,
-            pass: process.env.MAILER_SECRET_KEY
+            user: envs.MAILER_EMAIL,
+            pass: envs.MAILER_SECRET_KEY
         }
     });
 
